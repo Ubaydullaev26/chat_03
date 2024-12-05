@@ -121,7 +121,11 @@ def send_message(request):
 @swagger_auto_schema(
     method='get',
     operation_description="Retrieve a list of items.",
-    responses={200: openapi.Response('List of items')}
+    responses={200: openapi.Response('List of items')},
+    properties= {
+    'room': openapi.Schema(type=openapi.TYPE_STRING, description="Имя пользователя для регистрации"),
+    'message': openapi.Schema(type=openapi.TYPE_STRING, description="Пароль для нового аккаунта"),
+},
 )
 @api_view(['GET']) 
 def get_messages(request, room_id):
