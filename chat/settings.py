@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-l89=rz=0q&8$@25jbuy2^0-73@5184uz^li4#0a@b#di)%4mw-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['67.205.184.13:8000', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -72,10 +72,10 @@ WSGI_APPLICATION = "chat.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", 'db_name'),
-        "USER": os.environ.get("POSTGRES_USER", 'user'),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "pass"),
-        "HOST": os.environ.get("POSTGRES_HOST", "db"),
+        "NAME": os.environ.get("POSTGRES_DB", 'messanger'),
+        "USER": os.environ.get("POSTGRES_USER", 'postgres'),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "Tashkent@123"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }

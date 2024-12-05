@@ -1,6 +1,8 @@
 from django.db import models
 import uuid
 from django.utils.deprecation import MiddlewareMixin
+from django.contrib.auth.models import AbstractUser, Group, Permission
+
 
 
 class Room(models.Model):
@@ -31,7 +33,7 @@ class ClientSessionMiddleware(MiddlewareMixin):
     def process_request(self, request):
         if 'session_id' not in request.COOKIES:
             session_id = str(uuid.uuid4())
-            request.session['session_id'] = session_id
+            request.set_cookies['session_id'] = session_id
         else:
             session_id = request.COOKIES['session_id']
         request.session_id = session_id
@@ -51,3 +53,27 @@ class ClientRoomMiddleware(MiddlewareMixin):
         
         # Добавляем session_id в request для использования
         request.session_id = session_id
+        
+        
+class Operator(AbstractUser):
+    # Устанавливаем уникальные related_name для конфликтующих полей
+    groups = models.ManyToManyField(
+        Group,
+        related_name="operator_groups",  # Уникальное имя
+        blank=True,
+        help_text="The groups this user belongs to.",
+        verbose_name="groups",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name="operator_permissions",  # Уникальное имя
+        blank=True,
+        help_text="Specific permissions for this user.",
+        verbose_name="user permissions",
+    )
+    phone_number = models.CharField(
+        max_length=15, 
+        blank=True, 
+        null=True, 
+        verbose_name="Номер телефона"
+    )
