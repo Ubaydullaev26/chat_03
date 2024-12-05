@@ -101,8 +101,26 @@ from drf_yasg import openapi
 
 @swagger_auto_schema(
     method='post',
-    operation_description="Retrieve a list of items.",
-    responses={200: openapi.Response('List of items')}
+    operation_description="Send a message.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'sender_id': openapi.Schema(type=openapi.TYPE_STRING, description="ID of the sender."),
+            'receiver_id': openapi.Schema(type=openapi.TYPE_STRING, description="ID of the receiver."),
+            'content': openapi.Schema(type=openapi.TYPE_STRING, description="Content of the message."),
+        },
+        required=['receiver_id', 'content']
+    ),
+    responses={
+        200: openapi.Response('Message sent successfully.', schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'success': openapi.Schema(type=openapi.TYPE_BOOLEAN, description="Request success status."),
+                'message_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the created message."),
+            }
+        )),
+        400: "Bad Request"
+    }
 )
 @api_view(['POST'])
 def send_message(request):
@@ -121,11 +139,8 @@ def send_message(request):
 @swagger_auto_schema(
     method='get',
     operation_description="Retrieve a list of items.",
-    responses={200: openapi.Response('List of items')},
-    properties= {
-    'room': openapi.Schema(type=openapi.TYPE_STRING, description="Имя пользователя для регистрации"),
-    'message': openapi.Schema(type=openapi.TYPE_STRING, description="Пароль для нового аккаунта"),
-},
+    responses={200: openapi.Response('List of items')}
+    
 )
 @api_view(['GET']) 
 def get_messages(request, room_id):
