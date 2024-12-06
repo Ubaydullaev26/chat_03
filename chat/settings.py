@@ -72,10 +72,10 @@ WSGI_APPLICATION = "chat.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", 'db_name'),
-        "USER": os.environ.get("POSTGRES_USER", 'user'),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "pass"),
-        "HOST": os.environ.get("POSTGRES_HOST", "db"),
+        "NAME": os.environ.get("POSTGRES_DB", 'messanger'),
+        "USER": os.environ.get("POSTGRES_USER", 'postgres'),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "Tashkent@123"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }

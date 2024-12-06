@@ -137,8 +137,8 @@ def send_message(request, room_id):
         # Use the authenticated user's ID as the sender.
         sender = request.user
 
-        if not sender.is_authenticated:
-            return JsonResponse({'error': 'Authentication required.'}, status=401)
+        # if not sender.is_authenticated:
+        #     return JsonResponse({'error': 'Authentication required.'}, status=401)
 
         # Create and save the message
         message = Message.objects.create(sender=sender, room_id=room_id, content=content)
@@ -155,13 +155,7 @@ def send_message(request, room_id):
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'content': openapi.Schema(type=openapi.TYPE_STRING, description="Content of the message."),
-                    'author': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'full_name': openapi.Schema(type=openapi.TYPE_STRING, description="Full name of the sender."),
-                        },
-                        required=['full_name']
-                    ),
+                    'full_name': openapi.Schema(type=openapi.TYPE_STRING, description="Full name of the sender."),                       
                     'timestamp': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME, description="Timestamp of the message."),
                 }
             )
@@ -201,7 +195,7 @@ def get_messages(request, room_id):
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'room_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the room."),
+                        'room_id': openapi.Schema(type=openapi.TYPE_STRING, description="ID of the room."),
                     }
                 )
             )
