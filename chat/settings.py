@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "channels",
     "mess",
     "chat",
+    'corsheaders',
     'rest_framework',
     'drf_yasg',
 ]
@@ -42,9 +43,13 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = "chat.urls"
+
+CORS_ALLOW_ALL_ORIGINS = True  # или явно укажите разрешённые домены
+
 
 TEMPLATES = [
     {
@@ -72,10 +77,10 @@ WSGI_APPLICATION = "chat.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", 'db_name'),
-        "USER": os.environ.get("POSTGRES_USER", 'user'),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "pass"),
-        "HOST": os.environ.get("POSTGRES_HOST", "db"),
+        "NAME": os.environ.get("POSTGRES_DB", 'messanger'),
+        "USER": os.environ.get("POSTGRES_USER", 'postgres'),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "Tashkent@123"),
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
