@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 
 
 class Room(models.Model):
+    room_id = models.IntegerField(unique=True)  # Или CharField, если нужнo
     room_name = models.CharField(max_length=50)
 
     def __str__(self):

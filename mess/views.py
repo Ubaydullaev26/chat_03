@@ -242,14 +242,16 @@ def get_client_messages(request):
 
 @swagger_auto_schema(
     method='get',
-    operation_description="Send a message.",
-    
+    manual_parameters=[
+        openapi.Parameter('room_id', openapi.IN_QUERY, description="ID of the room", type=openapi.TYPE_INTEGER, required=True)
+    ],
+    operation_description="Get or create a room.",
     responses={
-        200: openapi.Response('Message sent successfully.', schema=openapi.Schema(
+        200: openapi.Response('Room retrieved or created successfully.', schema=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'success': openapi.Schema(type=openapi.TYPE_BOOLEAN, description="Request success status."),
-                'room_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the created room."),
+                'room_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the room."),
+                'created': openapi.Schema(type=openapi.TYPE_BOOLEAN, description="True if the room was created."),
             }
         )),
         400: "Bad Request"
@@ -257,17 +259,20 @@ def get_client_messages(request):
 )
 @api_view(['GET'])
 def create_room_for_client(request):
-    room_id = request.data.get('room_id')
+    # Получаем room_id из строки запроса
+    room_id = request.GET.get('room_id')
     if not room_id:
-        return JsonResponse({'error': 'Room not found'}, status=404)
+        return JsonResponse({'error': 'room_id is required'}, status=400)
 
-    # Проверяем, существует ли уже комната
-    room, created = Room.objects.get_or_create(room_id=room_id)
-    return JsonResponse({
-        'room_id': str(room.room_id),
-        'created': created  # True, если комната создана заново
-    })
-
+    try:
+        # Проверяем, существует ли уже комната
+        room, created = Room.objects.get_or_create(room_id=room_id)
+        return JsonResponse({
+            'room_id': room.room_id,
+            'created': created  # True, если комната создана заново
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 class RegisterOperatorView(APIView):
     def post(self, request):
