@@ -241,7 +241,7 @@ def get_client_messages(request):
 
 
 @swagger_auto_schema(
-    method='post',
+    method='get',
     operation_description="Send a message.",
     
     responses={
@@ -255,7 +255,7 @@ def get_client_messages(request):
         400: "Bad Request"
     }
 )
-@api_view(['POST'])
+@api_view(['GET'])
 def create_room_for_client(request):
     room_id = request.data.get('room_id')
     if not room_id:

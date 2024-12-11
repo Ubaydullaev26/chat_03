@@ -8,7 +8,7 @@ from .views import LoginView, get_rooms, send_message, get_messages
 urlpatterns = [
     # path("login/", HomeView.as_view(), name="login"),
     # path("<int:room_id>/<int:user_id>/", RoomView.as_view(), name="room"),
-    path('room/', views.create_room_for_client, name='create_room'),
+    path('new_room/', views.create_room_for_client, name='create_room'),
     path('send/<int:room_id>/', send_message, name='send_message'),
     #path('send_message/room_id', views.send_message, name='send_message'),
     path('get_room/', views.get_rooms, name='active_room'),
