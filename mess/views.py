@@ -5,7 +5,7 @@ from rest_framework import status
 
 from .utils import generate_token_for_user
 from .serializers import MessageSerializer, OperatorRegistrationSerializer
-from .models import Room, Message
+from .models import Room, Message, Operator
 from rest_framework.views import APIView
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -17,6 +17,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 
@@ -131,31 +134,44 @@ def send_message(request, room_id):
     if request.method == "POST":
         content = request.data.get('content')
 
+        # Проверка наличия content
         if not content:
-            return JsonResponse({'error': 'Content is required.'}, status=400)
+            return Response({"error": "Content is required."}, status=400)
 
-        # Use the authenticated user's ID as the sender.
-        sender = request.user
+        # Проверка существования комнаты
+        room = get_object_or_404(Room, id=room_id)
 
-        # if not sender.is_authenticated:
-        #     return JsonResponse({'error': 'Authentication required.'}, status=401)
-
-        # Create and save the message
-        message = Message.objects.create(sender=sender, room_id=room_id, content=content)
-
-        return JsonResponse({'success': True, 'message_id': message.id})
+        try:
+            # Create and save the message
+            message = Message.objects.create(
+                receiver_id="system",  # Или указать реального получателя
+                room=room,
+                content=content
+            )
+            return Response({
+                "success": True,
+                "message_id": message.id
+            }, status=200)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)    
     
 @swagger_auto_schema(
     method='get',
     operation_description="Get messages from a specific room.",
     responses={
         200: openapi.Response('List of messages', schema=openapi.Schema(
+            
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'content': openapi.Schema(type=openapi.TYPE_STRING, description="Content of the message."),
-                    'full_name': openapi.Schema(type=openapi.TYPE_STRING, description="Full name of the sender."),                       
+                    'author': openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'full_name': openapi.Schema(type=openapi.TYPE_STRING, description="Full name of the sender."),
+                        }
+                    ),
                     'timestamp': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME, description="Timestamp of the message."),
                 }
             )
@@ -168,19 +184,32 @@ def get_messages(request, room_id):
     """
     Retrieve all messages from a specific room, sorted by timestamp in descending order.
     """
+    # Fetch the room object or return 404 if not found
     room = get_object_or_404(Room, id=room_id)
-    messages = room.messages.order_by('-timestamp')
 
-    data = [
-        {
-            'content': msg.content,
-            'author': {
-                'full_name': msg.sender.get_full_name(),
-            },
-            'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
-        }
-        for msg in messages
-    ]
+    # Retrieve the messages, sorted by timestamp in descending order
+    messages = room.messages.all().order_by('-timestamp').values('id', 'sender_id', 'receiver_id', 'content', 'timestamp', 'is_read')
+
+    data = []
+    for msg in messages:
+        # If sender_id is a reference to User, get their full name
+        try:
+            sender = Operator.objects.get(id=msg['sender_id'])  # Assuming sender_id is a User ID
+            author = {
+                'full_name': f"{sender.first_name} {sender.last_name}",
+            }
+        except Operator.DoesNotExist:
+            # Handle the case where the sender doesn't exist in the User model
+            author = {
+                'full_name': msg['sender_id'],  # Fallback if no user found, you can adjust this as needed
+            }
+
+        # Append the message data to the response
+        data.append({
+            'content': msg['content'],
+            'author': author,
+            'timestamp': msg['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),  # Formatting the timestamp
+        })
 
     return JsonResponse(data, safe=False)
 
@@ -205,9 +234,13 @@ def get_messages(request, room_id):
 )
 @api_view(['GET'])
 def get_rooms(request):
-    rooms = Room.objects.all().order_by('-created_at')
-    data = [{'room_id': room.id} for room in rooms]
-    return Response(data)
+    try:
+        rooms = Room.objects.all().order_by('-created_at')
+        data = [{'room_id': str(room.id), 'room_name': room.room_name} for room in rooms]  # Adding room_name for clarity
+        return Response(data)
+    except Exception as e:
+        logger.error(f"Error fetching rooms: {e}")  # This will log the error message
+        return Response({'error': 'Internal Server Error', 'details': str(e)}, status=500)  # Send error details in the response for debugging
 
 
 @swagger_auto_schema(
