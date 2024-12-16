@@ -8,7 +8,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 class Room(models.Model):
     room_id = models.IntegerField()  # Или CharField, если нужнo
     room_name = models.CharField(max_length=50)
-    # created_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when the room is created
+    created_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when the room is created
 
 
     def __str__(self):
