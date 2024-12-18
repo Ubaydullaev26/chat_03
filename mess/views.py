@@ -235,7 +235,7 @@ def get_messages(request, room_id):
 @api_view(['GET'])
 def get_rooms(request):
     try:
-        rooms = Room.objects.all().order_by('-created_at')
+        rooms = Room.objects.all()
         data = [{'room_id': str(room.id), 'room_name': room.room_name} for room in rooms]  # Adding room_name for clarity
         return Response(data)
     except Exception as e:

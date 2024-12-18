@@ -8,7 +8,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 class Room(models.Model):
     room_id = models.IntegerField()  # Или CharField, если нужнo
     room_name = models.CharField(max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when the room is created
+ #   created_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when the room is created
 
 
     def __str__(self):
@@ -29,7 +29,7 @@ class Message(models.Model):
     
 class ClientSession(models.Model):
     session_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    created_at = models.DateTimeField(auto_now_add=True)  # Когда сессия создана
+    #created_at = models.DateTimeField(auto_now_add=True)  # Когда сессия создана
     is_active = models.BooleanField(default=True)  # Активная сессия
 
 
