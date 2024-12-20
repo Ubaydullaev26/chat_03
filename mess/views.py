@@ -192,24 +192,19 @@ def get_messages(request, room_id):
 
     data = []
     for msg in messages:
-        # If sender_id is a reference to User, get their full name
-        try:
-            sender = Operator.objects.get(id=msg['sender_id'])  # Assuming sender_id is a User ID
-            author = {
-                'full_name': f"{sender.first_name} {sender.last_name}",
-            }
-        except Operator.DoesNotExist:
-            # Handle the case where the sender doesn't exist in the User model
-            author = {
-                'full_name': msg['sender_id'],  # Fallback if no user found, you can adjust this as needed
-            }
+        sender_name = "Unknown Sender"
+        if msg['sender_id']:
+            try:
+                sender = Operator.objects.get(id=msg['sender_id'])
+                sender_name = f"{sender.first_name} {sender.last_name}"
+            except Operator.DoesNotExist:
+                pass  # Уже задано значение по умолчанию
 
-        # Append the message data to the response
         data.append({
-            'content': msg['content'],
-            'author': author,
-            'timestamp': msg['timestamp'].strftime('%Y-%m-%d %H:%M:%S'),  # Formatting the timestamp
-        })
+        'content': msg['content'] or 'No content available',
+        'author': {'full_name': sender_name},
+        'timestamp': msg['timestamp'].strftime('%Y-%m-%d %H:%M:%S') if msg['timestamp'] else 'Unknown time',
+    })
 
     return JsonResponse(data, safe=False)
 
