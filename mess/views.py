@@ -2,6 +2,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 from .utils import generate_token_for_user
 from .serializers import MessageSerializer, OperatorRegistrationSerializer
@@ -313,45 +315,47 @@ class RegisterOperatorView(APIView):
     
     
 class LoginView(APIView):
-    
     @swagger_auto_schema(
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties= {
-    'username': openapi.Schema(type=openapi.TYPE_STRING, description="Имя пользователя для регистрации"),
-    'password': openapi.Schema(type=openapi.TYPE_STRING, description="Пароль для нового аккаунта"),
-
-},
-        required=['username', 'password',]
-    ),
-responses={
-    status.HTTP_201_CREATED: openapi.Response(
-        description="Operator registered successfully!",
-        examples={
-            'application/json': {
-                'message': 'Operator registered successfully!',
-                'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'  # Пример токена
-            }
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description="Имя пользователя для регистрации"),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description="Пароль для нового аккаунта"),
+            },
+            required=['username', 'password']
+        ),
+        responses={
+            status.HTTP_200_OK: openapi.Response(
+                description="Успешный вход",
+                examples={
+                    'application/json': {
+                        'message': 'Login successful',
+                        'access': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                        'refresh': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                    }
+                }
+            ),
+            status.HTTP_400_BAD_REQUEST: openapi.Response(
+                description="Invalid data"
+            ),
         }
-    ),
-    status.HTTP_400_BAD_REQUEST: openapi.Response(
-        description="Invalid data"
-    ),
-}
-)   
+    )
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-        # Генерация токена
-            token = generate_token_for_user(user)  # Ваша функция генерации токена
-        
-            login(request, user)
+            # Генерация токенов
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            refresh_token = str(refresh)
+
+            login(request, user)  # Авторизуем пользователя
             return Response({
-            'message': 'Login successful',
-            'token': token  # Возвращаем токен
-        }, status=200)
+                'message': 'Login successful',
+                'access': access_token,
+                'refresh': refresh_token
+            }, status=status.HTTP_200_OK)
         else:
-            return Response({'error': 'Invalid credentials'}, status=401)
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
