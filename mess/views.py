@@ -160,9 +160,31 @@ def send_message(request, room_id):
 @swagger_auto_schema(
     method='get',
     operation_description="Get messages from a specific room.",
+    manual_parameters=[
+        openapi.Parameter(
+            'room_id',
+            openapi.IN_PATH,
+            description="ID of the room",
+            type=openapi.TYPE_INTEGER,
+            required=True
+        ),
+        openapi.Parameter(
+            'sender_id',
+            openapi.IN_QUERY,
+            description="ID of the sender (optional)",
+            type=openapi.TYPE_INTEGER,
+            required=False
+        ),
+        openapi.Parameter(
+            'receiver_id',
+            openapi.IN_QUERY,
+            description="ID of the receiver (optional)",
+            type=openapi.TYPE_INTEGER,
+            required=False
+        ),
+    ],
     responses={
         200: openapi.Response('List of messages', schema=openapi.Schema(
-            
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
