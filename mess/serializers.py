@@ -29,7 +29,7 @@ class OperatorRegistrationSerializer(serializers.ModelSerializer):
     
 
 class MessageModelSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Message
         fields = '__all__ '
-    

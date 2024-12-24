@@ -38,6 +38,76 @@ class AllMessagesAPIView(APIView):
     model = Message
     queryset = Message.objects.all()
     serializer_class = MessageModelSerializer
+    @swagger_auto_schema(
+        operation_summary="Retrieve all messages for a specific room",
+        operation_description=(
+            "Retrieve all messages for a specific room identified by the room ID. "
+            "The authenticated user can view messages if they have access to the room."
+        ),
+        manual_parameters=[
+            openapi.Parameter(
+                "room_id",
+                openapi.IN_QUERY,
+                description="The ID of the room to retrieve messages for.",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+        ],
+        responses={
+            200: openapi.Response(
+                description="Successful response with a list of messages.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            "id": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="The ID of the message.",
+                            ),
+                            "content": openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                description="The content of the message.",
+                            ),
+                            "room_id": openapi.Schema(
+                                type=openapi.TYPE_INTEGER,
+                                description="The ID of the room the message belongs to.",
+                            ),
+                            "created_at": openapi.Schema(
+                                type=openapi.TYPE_STRING,
+                                format=openapi.FORMAT_DATETIME,
+                                description="The timestamp when the message was created.",
+                            ),
+                        },
+                    ),
+                ),
+            ),
+            400: openapi.Response(
+                description="Bad request due to missing or invalid room_id.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "error": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Error message.",
+                        ),
+                    },
+                ),
+            ),
+            404: openapi.Response(
+                description="Room not found.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "error": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Error message.",
+                        ),
+                    },
+                ),
+            ),
+        },
+    )
 
     def get(self, request, *args, **kwargs):
         get_room_id = request.GET.get('room_id')
@@ -284,7 +354,7 @@ def get_messages(request, room_id):
     return JsonResponse(data, safe=False)
 
 @swagger_auto_schema(
-    method='post',
+    method='get',
     operation_description="Get active rooms.",
     responses={
         200: openapi.Response(
@@ -302,7 +372,7 @@ def get_messages(request, room_id):
         400: "Bad Request"
     }
 )
-@api_view(['POST'])
+@api_view(['GET'])
 def get_rooms(request):
     try:
         rooms = Room.objects.all()
