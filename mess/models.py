@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 
 
 class Room(models.Model):
-    room_id = models.IntegerField()  # Или CharField, если нужнo
+    room_id = models.CharField(max_length=255, unique=True)  
     room_name = models.CharField(max_length=50)
  #   created_at = models.DateTimeField(auto_now_add=True)  # Automatically sets the timestamp when the room is created
 
@@ -15,7 +15,16 @@ class Room(models.Model):
         return self.room_name
 
 
+SENDER = 'sender'
+RECEIVER = 'receiver'
+
+MESSAGE_TYPE = (
+    (SENDER, 'sender'),
+    (RECEIVER, 'receiver')
+)
+
 class Message(models.Model):
+    message_type = models.CharField(max_length=55, choices=MESSAGE_TYPE)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='messages')  # Add related_name
     sender_id = models.CharField(max_length=100)  # ID отправителя
     receiver_id = models.CharField(max_length=100)  # ID получателя

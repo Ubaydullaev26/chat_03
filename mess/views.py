@@ -3,6 +3,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import viewsets 
+from .serializers import MessageModelSerializer
 
 
 from .utils import generate_token_for_user
@@ -24,6 +26,35 @@ logger = logging.getLogger(__name__)
 
 
 
+
+# class MessagesViewSet(viewsets.ViewSet):
+#     model = Message
+#     queryset = Message.objects.all()
+#     http_method_names = ['get']
+#     serializer_class = MessageModelSerializer
+
+
+class AllMessagesAPIView(APIView):
+    model = Message
+    queryset = Message.objects.all()
+    serializer_class = MessageModelSerializer
+
+    def get(self, request, *args, **kwargs):
+        get_room_id = request.GET.get('room_id')
+        if not get_room_id:
+            return Response({'error': 'Room id is not specified'})
+        
+        # if 
+        #     return 
+        
+        room = Room.objects.get(id=get_room_id)
+        room_messages = Message.objects.filter(room_id=room)
+        msgs = MessageSerializer(room_messages, many=True).data
+        # messages = room
+        # msgs = MessageModelSerializer(messages, many=True)
+        
+        return Response(msgs, status=200)
+    
 
 # Create your views here.
 
@@ -134,7 +165,12 @@ def send_message(request, room_id):
     Sends a message to a specific room.
     """
     if request.method == "POST":
-        content = request.data.get('content')
+        content = request.data.get('content') 
+        message_type = request.data.get('message_type')
+        
+        if message_type != 'sender' or message_type != 'receiver':
+            return Response({"error": "Message Type is invalid either has to be sender or receiver"})
+            
 
         # Проверка наличия content
         if not content:
@@ -148,7 +184,8 @@ def send_message(request, room_id):
             message = Message.objects.create(
                 receiver_id="system",  # Или указать реального получателя
                 room=room,
-                content=content
+                content=content, 
+                message_type=message_type
             )
             return Response({
                 "success": True,
@@ -189,6 +226,7 @@ def send_message(request, room_id):
             items=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
+                    'message_type': openapi.Schema(type=openapi.TYPE_STRING, description="Type of message."),
                     'content': openapi.Schema(type=openapi.TYPE_STRING, description="Content of the message."),
                     'author': openapi.Schema(
                         type=openapi.TYPE_OBJECT,
@@ -203,20 +241,32 @@ def send_message(request, room_id):
         404: "Room not found"
     }
 )
+
+
+ 
+    
+
+
 @api_view(['GET'])
 def get_messages(request, room_id):
+    print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     """
     Retrieve all messages from a specific room, sorted by timestamp in descending order.
     """
+    # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', room.messages)
     # Fetch the room object or return 404 if not found
     room = get_object_or_404(Room, id=room_id)
+    print('****************************************', room)
+    message = Message.objects.filter(room_id=room_id )
+    print('HERE IS THE MESSAGE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', message)
 
     # Retrieve the messages, sorted by timestamp in descending order
-    messages = room.messages.all().order_by('-timestamp').values('id', 'sender_id', 'receiver_id', 'content', 'timestamp', 'is_read')
+    messages = room.messages.all().order_by('-timestamp').values('id', 'message_type', 'sender_id', 'receiver_id', 'content', 'timestamp', 'is_read')
 
     data = []
     for msg in messages:
         sender_name = "Unknown Sender"
+        # message_type=[x for x in room.messages.all()]
         if msg['sender_id']:
             try:
                 sender = Operator.objects.get(id=msg['sender_id'])
@@ -227,13 +277,14 @@ def get_messages(request, room_id):
         data.append({
         'content': msg['content'] or 'No content available',
         'author': {'full_name': sender_name},
+        'message_type': {'message_type': message},
         'timestamp': msg['timestamp'].strftime('%Y-%m-%d %H:%M:%S') if msg['timestamp'] else 'Unknown time',
     })
 
     return JsonResponse(data, safe=False)
 
 @swagger_auto_schema(
-    method='get',
+    method='post',
     operation_description="Get active rooms.",
     responses={
         200: openapi.Response(
@@ -251,7 +302,7 @@ def get_messages(request, room_id):
         400: "Bad Request"
     }
 )
-@api_view(['GET'])
+@api_view(['POST'])
 def get_rooms(request):
     try:
         rooms = Room.objects.all()

@@ -25,3 +25,11 @@ class OperatorRegistrationSerializer(serializers.ModelSerializer):
         operator.is_operator = True
         operator.save()
         return operator
+    
+    
+
+class MessageModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = '__all__ '
+    
