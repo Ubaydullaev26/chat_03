@@ -456,6 +456,8 @@ def create_room_for_client(request):
 
         return JsonResponse({
             'room_id': room.room_id,
+            'pk': room.pk,  # Adding primary key to the response
+
             'created': True  # Комната всегда создается заново
         })
     except Exception as e:
