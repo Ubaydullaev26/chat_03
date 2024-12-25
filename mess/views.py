@@ -365,7 +365,9 @@ def get_messages(request, room_id):
                 items=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'room_id': openapi.Schema(type=openapi.TYPE_STRING, description="ID of the room."),
+                        'room_id': openapi.Schema(type=openapi.TYPE_STRING, description="ID of the room."), 
+                        'pk': openapi.Schema(type=openapi.TYPE_INTEGER, description="Primary key of the room."),
+                       
                     }
                 )
             )
@@ -376,13 +378,20 @@ def get_messages(request, room_id):
 @api_view(['GET'])
 def get_rooms(request):
     try:
+        # Fetch all rooms
         rooms = Room.objects.all()
-        data = [{'room_id': str(room.id), 'room_name': room.room_name} for room in rooms]  # Adding room_name for clarity
+        data = [
+            {
+                'pk': room.pk,  # Adding primary key to the response
+                'room_id': str(room.room_id),  # Assuming room_id is stored as a string or UUID
+                'room_name': room.room_name  # Example: Adding room name for additional details
+            } 
+            for room in rooms
+        ]
         return Response(data)
     except Exception as e:
-        logger.error(f"Error fetching rooms: {e}")  # This will log the error message
-        return Response({'error': 'Internal Server Error', 'details': str(e)}, status=500)  # Send error details in the response for debugging
-
+        logger.error(f"Error fetching rooms: {e}")  # Logging the error
+        return Response({'error': 'Internal Server Error', 'details': str(e)}, status=500)  # Returning error details
 
 @swagger_auto_schema(
     method='get',
@@ -417,7 +426,7 @@ def get_client_messages(request):
 @swagger_auto_schema(
     method='post',
     manual_parameters=[
-        openapi.Parameter('room_id', openapi.IN_QUERY, description="ID of the room", type=openapi.TYPE_INTEGER, required=False)
+        openapi.Parameter('room_id', openapi.IN_QUERY, description="ID of the room", type=openapi.TYPE_INTEGER, required=True)
     ],
     operation_description="Get or create a room.",
     responses={
