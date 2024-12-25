@@ -1,3 +1,4 @@
+import random
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from rest_framework.response import Response
@@ -432,17 +433,19 @@ def get_client_messages(request):
 )
 @api_view(['POST'])
 def create_room_for_client(request):
-    # Получаем room_id из строки запроса
-    room_id = request.GET.get('room_id')
-    if not room_id:
-        return JsonResponse({'error': 'room_id is required'}, status=400)
-
     try:
-        # Проверяем, существует ли уже комната
-        room, created = Room.objects.get_or_create(room_id=room_id)
+        # Генерируем уникальный room_id
+        while True:
+            room_id = random.randint(100000, 999999)  # Шестизначное случайное число
+            if not Room.objects.filter(room_id=room_id).exists():
+                break
+
+        # Создаем новую комнату с сгенерированным room_id
+        room = Room.objects.create(room_id=room_id)
+
         return JsonResponse({
             'room_id': room.room_id,
-            'created': created  # True, если комната создана заново
+            'created': True  # Комната всегда создается заново
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
