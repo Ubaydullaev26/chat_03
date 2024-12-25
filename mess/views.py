@@ -414,7 +414,7 @@ def get_client_messages(request):
 
 
 @swagger_auto_schema(
-    method='get',
+    method='post',
     manual_parameters=[
         openapi.Parameter('room_id', openapi.IN_QUERY, description="ID of the room", type=openapi.TYPE_INTEGER, required=True)
     ],
@@ -430,7 +430,7 @@ def get_client_messages(request):
         400: "Bad Request"
     }
 )
-@api_view(['GET'])
+@api_view(['POST'])
 def create_room_for_client(request):
     # Получаем room_id из строки запроса
     room_id = request.GET.get('room_id')
