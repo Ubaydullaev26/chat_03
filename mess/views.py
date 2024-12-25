@@ -238,8 +238,8 @@ def send_message(request, room_id):
         content = request.data.get('content') 
         message_type = request.data.get('message_type')
         
-        if message_type != 'sender' or message_type != 'receiver':
-            return Response({"error": "Message Type is invalid either has to be sender or receiver"})
+        # if message_type != 'sender' or message_type != 'receiver':
+        #     return Response({"error": "Message Type is invalid either has to be sender or receiver"})
             
 
         # Проверка наличия content
