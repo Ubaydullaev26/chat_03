@@ -435,6 +435,8 @@ def get_client_messages(request):
             properties={
                 'room_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the room."),
                 'created': openapi.Schema(type=openapi.TYPE_BOOLEAN, description="True if the room was created."),
+                'pk': openapi.Schema(type=openapi.TYPE_INTEGER, description="Primary key of the room."),
+
             }
         )),
         400: "Bad Request"
