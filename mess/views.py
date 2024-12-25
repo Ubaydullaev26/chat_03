@@ -416,7 +416,7 @@ def get_client_messages(request):
 @swagger_auto_schema(
     method='post',
     manual_parameters=[
-        openapi.Parameter('room_id', openapi.IN_QUERY, description="ID of the room", type=openapi.TYPE_INTEGER, required=True)
+        openapi.Parameter('room_id', openapi.IN_QUERY, description="ID of the room", type=openapi.TYPE_INTEGER, required=False)
     ],
     operation_description="Get or create a room.",
     responses={
